@@ -105,15 +105,18 @@ func searchInfoServer(domain string){
 	var endPoints = infoSSL["endpoints"].([]interface{})
 
 	var whoIs = searchWhoIs(domain)
+
+	var favicon = getFavicon(domain)
 	
 	log.Println("endpoints")
-
 	log.Println(endPoints)
 	log.Println("whois")
-
 	log.Println(whoIs)
-
+	log.Println("favicon")
+	log.Println(favicon)
 	log.Println("terminoWhois")
+
+
 
 
 }
@@ -136,6 +139,26 @@ func searchWhoIs(domain string) (interface{}){
 	
 	return whoIs
 	
+}
+
+func getFavicon(domain string) (interface{}){
+
+	url := "https://besticon-demo.herokuapp.com/allicons.json?url="+domain
+
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	var favicon map[string]interface{}
+
+	err = json.NewDecoder(resp.Body).Decode(&favicon)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	
+	return favicon
+
 }
 
 func connectDB(){
