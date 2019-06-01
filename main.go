@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"github.com/go-chi/chi"
 	_ "github.com/lib/pq"
-
+	"github.com/PuerkitoBio/goquery"
+	"io/ioutil"
+	"strings"
 )
 
 var db *sql.DB
@@ -108,20 +110,26 @@ func searchInfoServer(domain string){
 
 	var favicon = getFavicon(domain)
 
+	var title = getTitle(domain)
+
+	var title2 = getTitle2(domain)
+
 
 	/* Country : whoIs["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["country"].(string),
 	Owner : whoIs["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["organization"].(string)}
 	 */
+	
 	log.Println("endpoints")
 	log.Println(endPoints)
 	log.Println("whois")
 	log.Println(whoIs)
 	log.Println("favicon")
 	log.Println(favicon)
+	log.Println("title")
+	log.Println(title)
+	log.Println("title2")
+	log.Println(title2)
 	log.Println("terminoWhois")
-
-
-
 
 }
 
@@ -165,20 +173,91 @@ func getFavicon(domain string) (interface{}){
 
 }
 
-func connectDB(){
-	// Connect to the "pruebaTruora" database.
-	/*db, err := sql.Open("postgres", "postgresql://root@localhost:26257/pruebaTruora?sslmode=disable")
-	if err != nil {
-		log.Println("error connecting to the database: ", err)
-	}*/
+func getTitle(domain string) (string){
+
+	resp, err := http.Get("https://"+domain)
+    if err != nil{
+        log.Fatal(err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != 200{
+        log.Fatalf("status code error: %d %s", resp.StatusCode, resp.Status)
+    }
+
+    doc, err := goquery.NewDocumentFromReader(resp.Body)
+  	if err != nil {
+        log.Fatal(err)
+    }
+	title := (doc.Find("title").Text())
+
+
+	
+	return title
 }
+
+func getTitle2(domain string) (string){
+
+	url := "http://"+domain
+	resp, err := http.Get(url)
+	// handle the error if there is one
+	if err != nil {
+		panic(err)
+	}
+	// do this now so it won't be forgotten
+	defer resp.Body.Close()
+	// reads html as a slice of bytes
+
+	dataInBytes, err := ioutil.ReadAll(resp.Body)
+    pageContent := string(dataInBytes)
+	evaluatetitle:= false
+    // Find a substr
+    titleStartIndex := strings.Index(pageContent, "<title>")
+    if titleStartIndex == -1 {
+        log.Println("No title element found")
+		evaluatetitle = true
+        
+    }
+
+    // The start index of the title is the index of the first
+    // character, the < symbol. We don't want to include
+    // <title> as part of the final value, so let's offset
+    // the index by the number of characers in <title>
+    titleStartIndex += 7
+	
+    // Find the index of the closing tag
+    titleEndIndex := strings.Index(pageContent, "</title>")
+    if titleEndIndex == -1 {
+        log.Println("No closing tag for title found.")
+        evaluatetitle = true
+    }
+	
+    // (Optional)
+    // Copy the substring in to a separate variable so the
+    // variables with the full document data can be garbage collected
+	pageTitle := " "
+	if (evaluatetitle){
+		pageTitle = " " 
+	}else{
+		pageTitle = string([]byte(pageContent[titleStartIndex:titleEndIndex]))
+	}
+	
+	return pageTitle
+}
+
+// func connectDB()(*sql.DB, err){
+// 	// Connect to the "pruebaTruora" database.
+// 	/*db, err := sql.Open("postgres", "postgresql://root@localhost:26257/pruebaTruora?sslmode=disable")
+// 	if err != nil {
+// 		log.Println("error connecting to the database: ", err)
+// 	}*/
+// }
 
 func main() {
 	route := chi.NewRouter()
 	route.Get("/", getDomain)
 	route.Get("/getDomains", getDomains)
 	log.Printf("starting server")
-	connectDB()
 	log.Fatal(http.ListenAndServe(":3000", route))
 
 }
