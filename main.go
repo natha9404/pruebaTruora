@@ -73,10 +73,10 @@ func saveSearchHistory(domain string){
 		return
 	}
 
-	var sql = "INSERT INTO domainregister (domain, updated_at) VALUES ($1, $2)"
+	var sql = "INSERT INTO domainregister (domain, updated_at) VALUES ($1, NOW())"
 	log.Println(sql)	   
 	
-	if _, err := db.Exec(sql, domain, "NOW()"); err != nil {
+	if _, err := db.Exec(sql, domain); err != nil {
 		panic(err)
 		return
 	}
@@ -107,7 +107,11 @@ func searchInfoServer(domain string){
 	var whoIs = searchWhoIs(domain)
 
 	var favicon = getFavicon(domain)
-	
+
+
+	/* Country : whoIs["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["country"].(string),
+	Owner : whoIs["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["organization"].(string)}
+	 */
 	log.Println("endpoints")
 	log.Println(endPoints)
 	log.Println("whois")
