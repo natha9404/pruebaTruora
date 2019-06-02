@@ -106,22 +106,17 @@ func searchInfoServer(domain string){
 	
 	var endPoints = infoSSL["endpoints"].([]interface{})
 
-	var whoIs = searchWhoIs(domain)
+	/* var whoIs = searchWhoIs(domain)
 
 	var favicon = getFavicon(domain)
 
 	var title = getTitle(domain)
 
-	var title2 = getTitle2(domain)
-
-
-	/* Country : whoIs["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["country"].(string),
-	Owner : whoIs["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["organization"].(string)}
-	 */
+	var title2 = getTitle2(domain) */
 	
 	log.Println("endpoints")
 	log.Println(endPoints)
-	log.Println("whois")
+	/* log.Println("whois")
 	log.Println(whoIs)
 	log.Println("favicon")
 	log.Println(favicon)
@@ -129,8 +124,68 @@ func searchInfoServer(domain string){
 	log.Println(title)
 	log.Println("title2")
 	log.Println(title2)
-	log.Println("terminoWhois")
+	log.Println("terminoWhois") */
+	createServer(endPoints)
 
+
+}
+
+func createServer(serversInfo interface{}){
+
+	log.Println("create server")
+	log.Println(len(serversInfo.([]interface{})))
+
+
+	jsonServer := make([]Server,len(serversInfo.([]interface{})))
+	var emptyField = ""
+
+	for a := 0; a < len(serversInfo.([]interface{})); a++ {
+		var serverinfo = serversInfo.([]interface{})[a]
+
+		log.Println(serverinfo.(map[string]interface{})["grade"].(string))
+		address := serverinfo.(map[string]interface{})["ipAddress"].(string)
+		grade := serverinfo.(map[string]interface{})["grade"].(string)
+
+		if(serverinfo.(map[string]interface{})["ipAddress"] == nil){
+			jsonServer[a] = Server{
+				Address : &emptyField,
+				Ssl_grade : &grade}
+			}
+				/* Country : dat["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["country"].(string),
+				Owner : dat["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["organization"].(string)}
+		 */
+
+		if(serverinfo.(map[string]interface{})["grade"] == nil){
+			jsonServer[a] = Server{
+				Address : &address,
+				Ssl_grade : &emptyField}
+		}
+			/* 	Country : dat["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["country"].(string),
+				Owner : dat["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["organization"].(string)}
+		 */
+
+		if(serverinfo.(map[string]interface{})["ipAddress"] == nil && serverinfo.(map[string]interface{})["grade"] == nil ){
+			jsonServer[a] = Server{
+				Address : &emptyField ,
+				Ssl_grade : &emptyField}
+				/* Country : dat["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["country"].(string),
+				Owner : dat["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["organization"].(string)
+			 */
+		}
+		if(serverinfo.(map[string]interface{})["ipAddress"] != nil && serverinfo.(map[string]interface{})["grade"] != nil ){
+			jsonServer[a] = Server{
+				Address : &address,
+				Ssl_grade : &grade}
+				/* Country : dat["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["country"].(string),
+				Owner : dat["WhoisRecord"].(map[string]interface{})["registrant"].(map[string]interface{})["organization"].(string)}
+			 */
+		}
+	
+	
+	 log.Println(serverinfo)
+
+	}
+	
 }
 
 func searchWhoIs(domain string) (interface{}){
