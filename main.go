@@ -149,8 +149,14 @@ func createServer(serversInfo interface{}){
 
 		if(serverinfo.(map[string]interface{})["ipAddress"] != nil){
 			var whoIs = searchWhoIs(serverinfo.(map[string]interface{})["ipAddress"].(string))
-			organization = whoIs.(map[string]interface{})["WhoisRecord"].(map[string]interface{})["registryData"].(map[string]interface{})["registrant"].(map[string]interface{})["organization"].(string)
-			country = whoIs.(map[string]interface{})["WhoisRecord"].(map[string]interface{})["registryData"].(map[string]interface{})["registrant"].(map[string]interface{})["country"].(string)
+
+			log.Println("whoIs")
+			if(whoIs.(map[string]interface{})["WhoisRecord"].(map[string]interface{})["registryData"].(map[string]interface{})["registrant"] != nil){
+				
+				organization = whoIs.(map[string]interface{})["WhoisRecord"].(map[string]interface{})["registryData"].(map[string]interface{})["registrant"].(map[string]interface{})["organization"].(string)
+				country = whoIs.(map[string]interface{})["WhoisRecord"].(map[string]interface{})["registryData"].(map[string]interface{})["registrant"].(map[string]interface{})["country"].(string)
+
+			}
 		}
 
 		grade :=  ""
@@ -197,7 +203,7 @@ func createServer(serversInfo interface{}){
 		}
 	
 	}
-	
+
 	log.Println("serverinfo")
 
 	log.Println(jsonServer)
